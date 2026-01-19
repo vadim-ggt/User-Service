@@ -22,7 +22,7 @@
             <column name="email" type="VARCHAR(255)">
                 <constraints nullable="false" unique="true"/>
             </column>
-            <column name="active" type="BOOLEAN">
+            <column name="active" type="BOOLEAN" defaultValue="true">
                 <constraints nullable="false"/>
             </column>
             <column name="created_at" type="TIMESTAMP"/>
@@ -36,10 +36,11 @@
             <column name="user_id" type="BIGINT">
                 <constraints nullable="false"
                              foreignKeyName="fk_card_user"
-                             references="users(id)"/>
+                             references="users(id)"
+                             deleteCascade="true"/>
             </column>
             <column name="number" type="VARCHAR(255)">
-                <constraints nullable="false"/>
+                <constraints nullable="false" unique="true"/>
             </column>
             <column name="holder" type="VARCHAR(255)">
                 <constraints nullable="false"/>
@@ -47,7 +48,7 @@
             <column name="expiration_date" type="VARCHAR(7)">
                 <constraints nullable="false"/>
             </column>
-            <column name="active" type="BOOLEAN">
+            <column name="active" type="BOOLEAN" defaultValue="true">
                 <constraints nullable="false"/>
             </column>
             <column name="created_at" type="TIMESTAMP"/>

@@ -1,4 +1,38 @@
 package com.innowise.userservice.domain.entity;
 
-public class User {
+import com.innowise.userservice.domain.base.BaseEntity;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+@Setter
+@Getter
+@Entity
+@Table(name = "users")
+public class User extends BaseEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, length = 100)
+    private String name;
+
+    @Column(nullable = false, length = 100)
+    private String surname;
+
+    @Column(name = "birth_date")
+    private LocalDate birthDate;
+
+    @Column(nullable = false, unique = true, length = 255)
+    private String email;
+
+    @Column(nullable = false)
+    private Boolean active = true;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<PaymentCard> cards = new ArrayList<>();
 }
