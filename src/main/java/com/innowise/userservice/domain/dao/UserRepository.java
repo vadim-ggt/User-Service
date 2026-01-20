@@ -10,20 +10,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 public interface UserRepository
         extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
+    Optional<User> findByEmail(String email);
 
-    @Modifying
-    @Transactional
-    @Query("update User u set u.name = :name," +
-            " u.surname = :surname," +
-            " u.active = :active where u.id = :id")
-    int updateUserById(
-            @Param("id") Long id,
-            @Param("name") String name,
-            @Param("surname") String surname,
-            @Param("active") Boolean active
-    );
+    User findUserById(Long id);
 
     @Modifying
     @Transactional
@@ -38,4 +31,5 @@ public interface UserRepository
                     "WHERE u.surname LIKE :letter || '%'",
             nativeQuery = true)
     Page<User> findBySurnameStartsWith(@Param("letter") String letter, Pageable pageable);
+
 }

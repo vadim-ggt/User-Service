@@ -14,22 +14,11 @@ import java.util.List;
 
 public interface PaymentCardRepository extends
         JpaRepository<PaymentCard, Long>, JpaSpecificationExecutor<PaymentCard> {
+    PaymentCard findPaymentCardById(Long id);
 
-    List<PaymentCard> findByUserId(Long userId);
+    Page<PaymentCard> findByUserId(Long userId, Pageable pageable);
 
     long countByUserId(Long userId);
-
-    @Modifying
-    @Transactional
-    @Query("UPDATE PaymentCard c SET c.number = :number, c.holder = :holder, " +
-            "c.expirationDate = :expDate, c.active = :active WHERE c.id = :id")
-    int updateCardById(
-            @Param("id") Long id,
-            @Param("number") String number,
-            @Param("holder") String holder,
-            @Param("expDate") String expDate,
-            @Param("active") Boolean active
-    );
 
     @Modifying
     @Transactional
