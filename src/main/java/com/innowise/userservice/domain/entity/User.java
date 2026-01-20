@@ -2,6 +2,7 @@ package com.innowise.userservice.domain.entity;
 
 import com.innowise.userservice.domain.base.BaseEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -34,5 +35,7 @@ public class User extends BaseEntity {
     private Boolean active = true;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @Size(max = 5, message = "User cannot have more than 5 cards")
     private List<PaymentCard> cards = new ArrayList<>();
+
 }
