@@ -1,4 +1,11 @@
 package com.innowise.userservice.domain.mapper.user;
 
-public class GetUserMapper {
+import com.innowise.userservice.domain.entity.User;
+import com.innowise.userservice.domain.mapper.GenericMapper;
+import com.innowise.userservice.web.dto.user.GetUserDto;
+import org.mapstruct.Mapper;
+
+@Mapper(config = GenericMapper.class)
+public interface GetUserMapper extends
+        GenericMapper<User, GetUserDto> {
 }
