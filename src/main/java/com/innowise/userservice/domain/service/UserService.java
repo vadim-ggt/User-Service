@@ -2,6 +2,7 @@ package com.innowise.userservice.domain.service;
 
 
 import com.innowise.userservice.web.dto.user.CreateUserDto;
+import com.innowise.userservice.web.dto.user.FilterUserDto;
 import com.innowise.userservice.web.dto.user.GetUserDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,7 +24,7 @@ public interface UserService {
 
     void deleteUser(Long id);
 
-    Page<GetUserDto> getActiveUsers(Pageable pageable);
+    Page<GetUserDto> findUsersByFilters(FilterUserDto filterUserDto, Pageable pageable);
 
     void setUserActiveStatus(Long userId, Boolean active);
 

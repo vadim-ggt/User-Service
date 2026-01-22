@@ -1,48 +1,114 @@
 package com.innowise.userservice.domain.service.impl;
 
+import com.innowise.userservice.domain.dao.PaymentCardRepository;
+import com.innowise.userservice.domain.dao.UserRepository;
+import com.innowise.userservice.domain.entity.PaymentCard;
+import com.innowise.userservice.domain.entity.User;
+import com.innowise.userservice.domain.mapper.card.CreateCardMapper;
+import com.innowise.userservice.domain.mapper.card.GetCardMapper;
 import com.innowise.userservice.domain.service.PaymentCardService;
+import com.innowise.userservice.domain.specification.PaymentCardSpecification;
 import com.innowise.userservice.web.dto.card.CreateCardDto;
 import com.innowise.userservice.web.dto.card.FilterCardDto;
 import com.innowise.userservice.web.dto.card.GetCardDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PaymentCardServiceImpl implements PaymentCardService {
+    private final PaymentCardRepository paymentCardRepository;
+    private final CreateCardMapper createCardMapper;
+    private final GetCardMapper getCardMapper;
+    private final UserRepository userRepository;
 
 
     @Override
+    @Transactional
     public GetCardDto createCard(Long userId, CreateCardDto createCardDto) {
-        return null;
+
+        long cardCount = paymentCardRepository.countByUserId(userId);
+        if (cardCount >= 5) {
+            return null; // тут будем исключение выбрасывать мб
+        }
+
+        User user = userRepository.findById(userId)
+                .orElse(null);
+
+        PaymentCard paymentCard = createCardMapper.toEntity(createCardDto);
+        paymentCard.setUser(user);
+
+        PaymentCard savedCard = paymentCardRepository.save(paymentCard);
+        return getCardMapper.toDto(savedCard);
     }
 
     @Override
     public GetCardDto findCardById(Long id) {
-        return null;
+        return paymentCardRepository.findById(id)
+                .map(getCardMapper::toDto)
+                .orElse(null);
     }
 
     @Override
     public Page<GetCardDto> getAllCards(Pageable pageable) {
-        return null;
+        Page<PaymentCard> paymentCards = paymentCardRepository.findAll(pageable);
+        return paymentCards.map(getCardMapper::toDto);
     }
 
     @Override
-    public void deleteCardById(Long id) {
+    public Page<GetCardDto> getCardsByUserId(Long userId, Pageable pageable) {
+        Page<PaymentCard> paymentCards = paymentCardRepository.findByUserId(userId, pageable);
+        return paymentCards.map(getCardMapper::toDto);
+    }
 
+    @Override
+    @Transactional
+    public void deleteCardById(Long id) {
+        PaymentCard deleteCard = paymentCardRepository.findPaymentCardById(id);
+        paymentCardRepository.delete(deleteCard);
+    }
+
+    @Override
+    @Transactional
+    public GetCardDto updateCard(Long id, CreateCardDto createCardDto) {
+    PaymentCard existCard = paymentCardRepository.findPaymentCardById(id);
+    createCardMapper.merge(existCard, createCardDto);
+    PaymentCard updateCard = paymentCardRepository.save(existCard);
+    return getCardMapper.toDto(updateCard);
     }
 
     @Override
     public Page<GetCardDto> findCardsByFilter(FilterCardDto filter, Pageable pageable) {
-        return null;
+
+        Specification<PaymentCard> spec = Specification
+                .allOf(
+                        filter.getUserId() != null
+                                ? PaymentCardSpecification.hasUserId(filter.getUserId())
+                                : null,
+                        filter.getUserName() != null && !filter.getUserName().isBlank()
+                                ? PaymentCardSpecification.hasUserName(filter.getUserName())
+                                : null,
+                        filter.getUserSurname() != null && !filter.getUserSurname().isBlank()
+                                ? PaymentCardSpecification.hasUserSurname(filter.getUserSurname())
+                                : null,
+                        filter.getActive() != null
+                                ? PaymentCardSpecification.isActive(filter.getActive())
+                                : null
+                );
+
+        return paymentCardRepository.findAll(spec, pageable)
+                .map(getCardMapper::toDto);
     }
 
     @Override
+    @Transactional
     public void setCardActiveStatus(Long cardId, Boolean active) {
-
+        paymentCardRepository.setCardActiveStatus(cardId, active);
     }
 }
