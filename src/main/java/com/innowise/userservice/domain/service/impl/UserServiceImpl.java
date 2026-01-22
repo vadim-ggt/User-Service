@@ -28,8 +28,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public GetUserDto createUser(CreateUserDto getUserDto) {
-        User user =  createUserMapper.toEntity(getUserDto);
+    public GetUserDto createUser(CreateUserDto createUserDto) {
+        User user =  createUserMapper.toEntity(createUserDto);
         User savedUser = userRepository.save(user);
         return getUserMapper.toDto(savedUser);
     }
@@ -71,6 +71,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void deleteUser(Long id) {
     User existUser = userRepository.findUserById(id);
     userRepository.delete(existUser);
