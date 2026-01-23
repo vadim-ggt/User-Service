@@ -4,6 +4,10 @@ import com.innowise.userservice.domain.dao.PaymentCardRepository;
 import com.innowise.userservice.domain.dao.UserRepository;
 import com.innowise.userservice.domain.entity.PaymentCard;
 import com.innowise.userservice.domain.entity.User;
+import com.innowise.userservice.domain.exeption.CardAlreadyExistsException;
+import com.innowise.userservice.domain.exeption.CardLimitExceededException;
+import com.innowise.userservice.domain.exeption.CardNotFoundException;
+import com.innowise.userservice.domain.exeption.UserNotFoundException;
 import com.innowise.userservice.domain.mapper.card.CreateCardMapper;
 import com.innowise.userservice.domain.mapper.card.GetCardMapper;
 import com.innowise.userservice.domain.service.PaymentCardService;
@@ -32,14 +36,17 @@ public class PaymentCardServiceImpl implements PaymentCardService {
     @Override
     @Transactional
     public GetCardDto createCard(Long userId, CreateCardDto createCardDto) {
+        if (paymentCardRepository.existsByNumber(createCardDto.getNumber())) {
+            throw new CardAlreadyExistsException(createCardDto.getNumber());
+        }
 
         long cardCount = paymentCardRepository.countByUserId(userId);
         if (cardCount >= 5) {
-            return null; // тут будем исключение выбрасывать мб
+            throw new CardLimitExceededException(userId);
         }
 
         User user = userRepository.findById(userId)
-                .orElse(null);
+                .orElseThrow(() -> new UserNotFoundException(userId));
 
         PaymentCard paymentCard = createCardMapper.toEntity(createCardDto);
         paymentCard.setUser(user);
@@ -50,9 +57,9 @@ public class PaymentCardServiceImpl implements PaymentCardService {
 
     @Override
     public GetCardDto findCardById(Long id) {
-        return paymentCardRepository.findById(id)
-                .map(getCardMapper::toDto)
-                .orElse(null);
+        PaymentCard card = paymentCardRepository.findById(id)
+                .orElseThrow(() -> new CardNotFoundException(id));
+        return getCardMapper.toDto(card);
     }
 
     @Override
@@ -70,14 +77,16 @@ public class PaymentCardServiceImpl implements PaymentCardService {
     @Override
     @Transactional
     public void deleteCardById(Long id) {
-        PaymentCard deleteCard = paymentCardRepository.findPaymentCardById(id);
+        PaymentCard deleteCard = paymentCardRepository.findById(id)
+                .orElseThrow(() -> new CardNotFoundException(id));
         paymentCardRepository.delete(deleteCard);
     }
 
     @Override
     @Transactional
     public GetCardDto updateCard(Long id, CreateCardDto createCardDto) {
-    PaymentCard existCard = paymentCardRepository.findPaymentCardById(id);
+        PaymentCard existCard = paymentCardRepository.findById(id)
+                .orElseThrow(() -> new CardNotFoundException(id));
     createCardMapper.merge(existCard, createCardDto);
     PaymentCard updateCard = paymentCardRepository.save(existCard);
     return getCardMapper.toDto(updateCard);
@@ -109,6 +118,8 @@ public class PaymentCardServiceImpl implements PaymentCardService {
     @Override
     @Transactional
     public void setCardActiveStatus(Long cardId, Boolean active) {
+        PaymentCard card = paymentCardRepository.findById(cardId)
+                .orElseThrow(() -> new CardNotFoundException(cardId));
         paymentCardRepository.setCardActiveStatus(cardId, active);
     }
 }

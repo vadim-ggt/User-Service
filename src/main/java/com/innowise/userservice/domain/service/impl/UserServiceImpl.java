@@ -2,6 +2,8 @@ package com.innowise.userservice.domain.service.impl;
 
 import com.innowise.userservice.domain.dao.UserRepository;
 import com.innowise.userservice.domain.entity.User;
+import com.innowise.userservice.domain.exeption.UserAlreadyExistsException;
+import com.innowise.userservice.domain.exeption.UserNotFoundException;
 import com.innowise.userservice.domain.mapper.user.CreateUserMapper;
 import com.innowise.userservice.domain.mapper.user.GetUserMapper;
 import com.innowise.userservice.domain.service.UserService;
@@ -29,6 +31,10 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public GetUserDto createUser(CreateUserDto createUserDto) {
+        if (userRepository.findByEmail(createUserDto.getEmail()).isPresent()) {
+            throw new UserAlreadyExistsException(createUserDto.getEmail());
+        }
+
         User user =  createUserMapper.toEntity(createUserDto);
         User savedUser = userRepository.save(user);
         return getUserMapper.toDto(savedUser);
@@ -36,15 +42,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public GetUserDto getUserById(Long id) {
-        return userRepository.findById(id)
-                .map(getUserMapper::toDto)
-                .orElse(null);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
+        return getUserMapper.toDto(user);
     }
 
     @Override
     public GetUserDto getUserByEmail(String email) {
         User user = userRepository.findByEmail(email)
-                .orElse(null);
+                .orElseThrow(() -> new UserNotFoundException(email));
         return getUserMapper.toDto(user);
     }
 
@@ -63,7 +69,8 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public GetUserDto updateUser(Long id, CreateUserDto dto) {
-        User existUser = userRepository.findUserById(id);
+        User existUser = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
 
         createUserMapper.merge(existUser, dto);
         User updateUser = userRepository.save(existUser);
@@ -73,7 +80,8 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void deleteUser(Long id) {
-    User existUser = userRepository.findUserById(id);
+        User existUser = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
     userRepository.delete(existUser);
     }
 
@@ -101,6 +109,9 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void setUserActiveStatus(Long userId, Boolean active) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
         userRepository.setUserActiveStatus(userId, active);
     }
 
