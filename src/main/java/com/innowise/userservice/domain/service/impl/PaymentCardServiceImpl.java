@@ -16,6 +16,7 @@ import com.innowise.userservice.web.dto.card.CreateCardDto;
 import com.innowise.userservice.web.dto.card.FilterCardDto;
 import com.innowise.userservice.web.dto.card.GetCardDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -31,6 +32,13 @@ public class PaymentCardServiceImpl implements PaymentCardService {
     private final CreateCardMapper createCardMapper;
     private final GetCardMapper getCardMapper;
     private final UserRepository userRepository;
+    private final CacheManager cacheManager;
+
+    private void evictUserCache(Long userId) {
+        if (cacheManager.getCache("users") != null) {
+            cacheManager.getCache("users").evict(userId);
+        }
+    }
 
 
     @Override
@@ -52,6 +60,7 @@ public class PaymentCardServiceImpl implements PaymentCardService {
         paymentCard.setUser(user);
 
         PaymentCard savedCard = paymentCardRepository.save(paymentCard);
+        evictUserCache(userId);
         return getCardMapper.toDto(savedCard);
     }
 
@@ -79,7 +88,9 @@ public class PaymentCardServiceImpl implements PaymentCardService {
     public void deleteCardById(Long id) {
         PaymentCard deleteCard = paymentCardRepository.findById(id)
                 .orElseThrow(() -> new CardNotFoundException(id));
+        Long userId = deleteCard.getUser().getId();
         paymentCardRepository.delete(deleteCard);
+        evictUserCache(userId);
     }
 
     @Override
@@ -89,6 +100,7 @@ public class PaymentCardServiceImpl implements PaymentCardService {
                 .orElseThrow(() -> new CardNotFoundException(id));
     createCardMapper.merge(existCard, createCardDto);
     PaymentCard updateCard = paymentCardRepository.save(existCard);
+    evictUserCache(updateCard.getUser().getId());
     return getCardMapper.toDto(updateCard);
     }
 
@@ -121,5 +133,6 @@ public class PaymentCardServiceImpl implements PaymentCardService {
         PaymentCard card = paymentCardRepository.findById(cardId)
                 .orElseThrow(() -> new CardNotFoundException(cardId));
         paymentCardRepository.setCardActiveStatus(cardId, active);
+        evictUserCache(card.getUser().getId());
     }
 }
