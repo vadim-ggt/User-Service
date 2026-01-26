@@ -226,6 +226,36 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     }
 
     @Test
+    void test_searchUsers_ByFilterSurname() throws Exception {
+        mockMvc.perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createTestUserDto())))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/api/users/search")
+                        .param("surname", "Ivanov")
+                        .param("page", "0")
+                        .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(1));
+    }
+
+    @Test
+    void test_searchUsers_ByFilterActiveStatus() throws Exception {
+        mockMvc.perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createTestUserDto())))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/api/users/search")
+                        .param("active", "true")
+                        .param("page", "0")
+                        .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(1));
+    }
+
+    @Test
     void test_patchUserActiveStatus_EvictsCache() throws Exception {
         MvcResult result = mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)

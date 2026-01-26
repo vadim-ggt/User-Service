@@ -3,9 +3,6 @@ name: Java CI Pipeline (User Service)
 on:
   push:
     branches: [ "dev", "feat-ci-pipeline" ]
-  pull_request:
-    branches: [ "feat-containerization" ]
-  workflow_dispatch:
 
 permissions:
   contents: read

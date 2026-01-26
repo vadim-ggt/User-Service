@@ -245,6 +245,169 @@ public class PaymentCardControllerIntegrationTest extends BaseIntegrationTest {
                 .andExpect(jsonPath("$.totalElements").value(0));
     }
 
+    @Test
+    void searchCards_ByFilterUserName() throws Exception {
+        CreateUserDto userDto = new CreateUserDto();
+        userDto.setName("John");
+        userDto.setSurname("Doe");
+        userDto.setEmail("john_" + System.nanoTime() + "@mail.com");
+
+        MvcResult userResult = mockMvc.perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(userDto)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        Long userId = objectMapper.readValue(
+                userResult.getResponse().getContentAsString(),
+                GetUserDto.class
+        ).getId();
+
+        CreateCardDto cardDto = createCardDto();
+        cardDto.setNumber("1111222233334444");
+        mockMvc.perform(post("/api/cards/user/{userId}", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(cardDto)))
+                .andExpect(status().isCreated());
+
+        CreateUserDto userDto2 = new CreateUserDto();
+        userDto2.setName("Mike");
+        userDto2.setSurname("Smith");
+        userDto2.setEmail("mike_" + System.nanoTime() + "@mail.com");
+
+        MvcResult userResult2 = mockMvc.perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(userDto2)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        Long userId2 = objectMapper.readValue(
+                userResult2.getResponse().getContentAsString(),
+                GetUserDto.class
+        ).getId();
+
+        CreateCardDto cardDto2 = createCardDto();
+        cardDto2.setNumber("9999888877776666");
+        mockMvc.perform(post("/api/cards/user/{userId}", userId2)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(cardDto2)))
+                .andExpect(status().isCreated());
+
+
+        mockMvc.perform(get("/api/cards/search")
+                        .param("userName", "John")
+                        .param("page", "0")
+                        .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].number").value("1111222233334444"));
+    }
+
+    @Test
+    void searchCards_ByFilterUserSurname() throws Exception {
+
+        CreateUserDto userDto = new CreateUserDto();
+        userDto.setName("John");
+        userDto.setSurname("Smith");
+        userDto.setEmail("john_" + System.nanoTime() + "@mail.com");
+
+        MvcResult userResult = mockMvc.perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(userDto)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        Long userId = objectMapper.readValue(
+                userResult.getResponse().getContentAsString(),
+                GetUserDto.class
+        ).getId();
+
+        CreateCardDto cardDto = createCardDto();
+        cardDto.setNumber("1111222233334444");
+        mockMvc.perform(post("/api/cards/user/{userId}", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(cardDto)))
+                .andExpect(status().isCreated());
+
+        CreateUserDto userDto2 = new CreateUserDto();
+        userDto2.setName("Mike");
+        userDto2.setSurname("Lolo");
+        userDto2.setEmail("mike_" + System.nanoTime() + "@mail.com");
+
+        MvcResult userResult2 = mockMvc.perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(userDto2)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        Long userId2 = objectMapper.readValue(
+                userResult2.getResponse().getContentAsString(),
+                GetUserDto.class
+        ).getId();
+
+        CreateCardDto cardDto2 = createCardDto();
+        cardDto2.setNumber("9999888877776666");
+        mockMvc.perform(post("/api/cards/user/{userId}", userId2)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(cardDto2)))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/api/cards/search")
+                        .param("userSurname", "Smith")
+                        .param("page", "0")
+                        .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.totalElements").value(1));
+    }
+
+    @Test
+    void searchCards_ByFilterActive() throws Exception {
+        Long userId = createUser();
+
+        CreateCardDto activeCardDto = createCardDto();
+        activeCardDto.setNumber("1111222233334444");
+        mockMvc.perform(post("/api/cards/user/{userId}", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(activeCardDto)))
+                .andExpect(status().isCreated());
+
+        CreateCardDto inactiveCardDto = createCardDto();
+        inactiveCardDto.setNumber("5555444433332222");
+
+        MvcResult inactiveCardResult = mockMvc.perform(post("/api/cards/user/{userId}", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(inactiveCardDto)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        Long inactiveCardId = objectMapper.readValue(
+                inactiveCardResult.getResponse().getContentAsString(),
+                GetCardDto.class
+        ).getId();
+
+        mockMvc.perform(patch("/api/cards/{id}/active", inactiveCardId)
+                        .param("active", "false"))
+                .andExpect(status().isNoContent());
+
+
+        mockMvc.perform(get("/api/cards/search")
+                        .param("active", "true")
+                        .param("page", "0")
+                        .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.totalElements").value(1));
+
+        mockMvc.perform(get("/api/cards/search")
+                        .param("active", "false")
+                        .param("page", "0")
+                        .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.totalElements").value(1));
+    }
 
     @Test
     void searchCards_withPagination() throws Exception {
