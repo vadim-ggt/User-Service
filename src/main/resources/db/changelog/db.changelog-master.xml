@@ -7,4 +7,5 @@
 
     <include file="db/changelog/V1.0/20260119_create_tables.xml"/>
     <include file="db/changelog/V1.0/20260119_create_indexes.xml"/>
+    <include file="db/changelog/V1.0/20260206_add_user_id_column.xml"/>
 </databaseChangeLog>

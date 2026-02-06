@@ -8,6 +8,7 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 public class GetUserDto implements Serializable {
@@ -15,6 +16,7 @@ public class GetUserDto implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private Long id;
+    private UUID userId;
     private String name;
     private String surname;
     private LocalDate birthDate;

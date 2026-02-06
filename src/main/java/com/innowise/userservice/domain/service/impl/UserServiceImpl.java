@@ -21,6 +21,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +41,11 @@ public class UserServiceImpl implements UserService {
         }
 
         User user =  createUserMapper.toEntity(createUserDto);
+
+        if (user.getUserId() == null) {
+            user.setUserId(UUID.randomUUID());
+        }
+
         User savedUser = userRepository.save(user);
         return getUserMapper.toDto(savedUser);
     }

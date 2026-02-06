@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20260206-1" author="vadim-ggt">
+        <comment>Add user_id column to users table for Auth Service integration</comment>
+
+        <addColumn tableName="users">
+            <column name="user_id" type="UUID">
+                <constraints nullable="true" unique="true"/> // не должно быть нулем, но так пока бд не пустая чтобы ошибок небыло поставил так
+            </column>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>
