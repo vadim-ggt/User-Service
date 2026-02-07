@@ -10,7 +10,7 @@
 
         <addColumn tableName="users">
             <column name="user_id" type="UUID">
-                <constraints nullable="true" unique="true"/> // не должно быть нулем, но так пока бд не пустая чтобы ошибок небыло поставил так
+                <constraints nullable="true" unique="true"/>
             </column>
         </addColumn>
     </changeSet>
