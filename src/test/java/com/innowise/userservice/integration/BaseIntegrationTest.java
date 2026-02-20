@@ -3,6 +3,7 @@ package com.innowise.userservice.integration;
 
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.GenericContainer;
@@ -14,6 +15,7 @@ import org.testcontainers.utility.DockerImageName;
 @SpringBootTest
 @AutoConfigureMockMvc
 @Testcontainers
+@WithMockUser(roles = "ADMIN") // тк инхерайтед, аннотация наследуется
 public abstract class BaseIntegrationTest {
 
     @Container

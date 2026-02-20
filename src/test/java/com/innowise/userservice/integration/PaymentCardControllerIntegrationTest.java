@@ -5,6 +5,7 @@ import com.innowise.userservice.web.dto.card.CreateCardDto;
 import com.innowise.userservice.web.dto.card.GetCardDto;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.innowise.userservice.domain.dao.UserRepository;
@@ -27,6 +28,7 @@ import java.util.Objects;
 @SpringBootTest
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+
 public class PaymentCardControllerIntegrationTest extends BaseIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
