@@ -10,6 +10,7 @@ import org.springframework.lang.NonNull;
 
 
 import java.util.Optional;
+import java.util.UUID;
 
 public interface UserRepository
         extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
@@ -33,6 +34,8 @@ public interface UserRepository
                     "WHERE u.surname LIKE :letter || '%'",
             nativeQuery = true)
     Page<User> findBySurnameStartsWith(@Param("letter") String letter, Pageable pageable);
+
+    Optional<User> findByUserId(UUID userId);
 
 }
 

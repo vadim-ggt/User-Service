@@ -130,4 +130,11 @@ public class UserServiceImpl implements UserService {
         userRepository.setUserActiveStatus(userId, active);
     }
 
+    @Override
+    public GetUserDto getUserByUserId(UUID userId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+        return getUserMapper.toDto(user);
+    }
+
 }

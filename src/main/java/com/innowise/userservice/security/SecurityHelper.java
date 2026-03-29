@@ -69,4 +69,12 @@ public class SecurityHelper {
         }
         return null;
     }
+
+    public boolean isOwnerByUuid(UUID requestedUserId) {
+        UUID userIdFromToken = getUserIdFromToken();
+        if (userIdFromToken == null || requestedUserId == null) {
+            return false;
+        }
+        return userIdFromToken.equals(requestedUserId);
+    }
 }

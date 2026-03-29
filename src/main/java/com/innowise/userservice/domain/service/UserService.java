@@ -7,6 +7,8 @@ import com.innowise.userservice.web.dto.user.GetUserDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.UUID;
+
 
 public interface UserService {
 
@@ -27,5 +29,7 @@ public interface UserService {
     Page<GetUserDto> findUsersByFilters(FilterUserDto filterUserDto, Pageable pageable);
 
     void setUserActiveStatus(Long userId, Boolean active);
+
+    GetUserDto getUserByUserId(UUID userId);
 
 }
