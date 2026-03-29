@@ -9,6 +9,7 @@ import lombok.Setter;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Setter
 @Getter
@@ -18,6 +19,9 @@ public class User extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "user_id", nullable = true, unique = true) // не должно быть нулем, но так пока бд не пустая чтобы ошибок небыло поставил так
+    private UUID userId;
 
     @Column(nullable = false, length = 100)
     private String name;

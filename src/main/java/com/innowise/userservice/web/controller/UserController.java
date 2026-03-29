@@ -11,7 +11,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/users")
@@ -20,6 +23,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
+    @PreAuthorize("hasRole('INTERNAL') or hasRole('ADMIN')")
     public ResponseEntity<GetUserDto> createUser(
             @RequestBody @Valid CreateUserDto createUserDto) {
         GetUserDto user = userService.createUser(createUserDto);
@@ -27,17 +31,20 @@ public class UserController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<GetUserDto>> getAllUsers(Pageable pageable) {
         return ResponseEntity.status(HttpStatus.OK).body(userService.getAllUsers(pageable));
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @securityHelper.isOwner(#id)")
     public ResponseEntity<GetUserDto> getUserById(@PathVariable Long id) {
         GetUserDto user = userService.getUserById(id);
         return ResponseEntity.ok(user);
     }
 
     @GetMapping("/search")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<GetUserDto>> findUsersByFilters(
             @ModelAttribute FilterUserDto filter,
             Pageable pageable
@@ -48,6 +55,7 @@ public class UserController {
     }
 
     @GetMapping("/by-email")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('INTERNAL') or @securityHelper.isEmailOwner(#email)")
     public ResponseEntity<GetUserDto> getUserByEmail(
             @RequestParam String email
     ) {
@@ -57,6 +65,7 @@ public class UserController {
     }
 
     @GetMapping("/by-surname")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<GetUserDto>> getUserBySurname(
             @RequestParam String surname,
             Pageable pageable
@@ -67,6 +76,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @securityHelper.isOwner(#id)")
     public ResponseEntity<GetUserDto> updateUser(
             @PathVariable Long id,
             @RequestBody @Valid CreateUserDto dto
@@ -75,18 +85,26 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @securityHelper.isOwner(#id)")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}/active")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('INTERNAL')")
     public ResponseEntity<Void> setUserActiveStatus(
             @PathVariable Long id,
             @RequestParam Boolean active
     ) {
         userService.setUserActiveStatus(id, active);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/by-uuid/{userId}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('INTERNAL') or @securityHelper.isOwnerByUuid(#userId)")
+    public ResponseEntity<GetUserDto> getUserByUserId(@PathVariable UUID userId) {
+        return ResponseEntity.ok(userService.getUserByUserId(userId));
     }
 
 }

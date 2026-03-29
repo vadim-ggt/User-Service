@@ -12,12 +12,16 @@ services:
       - "${DB_HOST_PORT}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    networks:
+      - shared-net
 
   redis-cache:
     image: redis:7.2-alpine
     container_name: user-service-redis
     ports:
       - "${REDIS_PORT}:6379"
+    networks:
+      - shared-net
 
   user-service:
     env_file:
@@ -37,6 +41,13 @@ services:
     depends_on:
       - postgres-db
       - redis-cache
+    networks:
+      - shared-net
+
+networks:
+  shared-net:
+    name: my_shared_network
+    external: true
 
 volumes:
   pgdata:

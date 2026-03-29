@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,6 +20,7 @@ public class PaymentCardController {
     private final PaymentCardService paymentCardService;
 
     @PostMapping("/user/{userId}")
+    @PreAuthorize("hasRole('ADMIN') or @securityHelper.isOwner(#userId)")
     public ResponseEntity<GetCardDto> createCard(
             @PathVariable Long userId,
             @RequestBody @Valid CreateCardDto createCardDto
@@ -28,17 +30,20 @@ public class PaymentCardController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @securityHelper.isCardOwner(#id)")
     public ResponseEntity<GetCardDto> getCardById(@PathVariable Long id) {
         GetCardDto card = paymentCardService.findCardById(id);
         return ResponseEntity.ok(card);
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<GetCardDto>> getAllCards(Pageable pageable) {
         return ResponseEntity.ok(paymentCardService.getAllCards(pageable));
     }
 
     @GetMapping("/user/{userId}")
+    @PreAuthorize("hasRole('ADMIN') or @securityHelper.isOwner(#userId)")
     public ResponseEntity<Page<GetCardDto>> getCardsByUserId(
             @PathVariable Long userId,
             Pageable pageable
@@ -47,6 +52,7 @@ public class PaymentCardController {
     }
 
     @GetMapping("/search")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<GetCardDto>> findCardsByFilter(
             @ModelAttribute FilterCardDto filter,
             Pageable pageable
@@ -55,6 +61,7 @@ public class PaymentCardController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @securityHelper.isCardOwner(#id)")
     public ResponseEntity<GetCardDto> updateCard(
             @PathVariable Long id,
             @RequestBody @Valid CreateCardDto createCardDto
@@ -63,12 +70,14 @@ public class PaymentCardController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @securityHelper.isCardOwner(#id)")
     public ResponseEntity<Void> deleteCard(@PathVariable Long id) {
         paymentCardService.deleteCardById(id);
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}/active")
+    @PreAuthorize("hasRole('ADMIN') or @securityHelper.isCardOwner(#id)")
     public ResponseEntity<Void> setCardActiveStatus(
             @PathVariable Long id,
             @RequestParam Boolean active

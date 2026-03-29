@@ -40,7 +40,6 @@ public class PaymentCardServiceImpl implements PaymentCardService {
         }
     }
 
-
     @Override
     @Transactional
     public GetCardDto createCard(Long userId, CreateCardDto createCardDto) {
@@ -135,6 +134,4 @@ public class PaymentCardServiceImpl implements PaymentCardService {
         paymentCardRepository.setCardActiveStatus(cardId, active);
         evictUserCache(card.getUser().getId());
     }
-
-
 }
